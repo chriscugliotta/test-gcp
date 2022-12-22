@@ -1,0 +1,15 @@
+*.log*
+*.tfstate*
+*.zip
+key.json
+
+.coverage/
+.idea/
+.ipynb_checkpoints/
+.pytest_cache/
+.terraform/
+.venv*/
+.vscode/
+__pycache__/
+
+venv*/
