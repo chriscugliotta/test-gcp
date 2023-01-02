@@ -1,5 +1,19 @@
 # test-gcp
 
+I created this codebase as an opportunity to learn and demo Google Cloud Platform (GCP).  To learn the ecosystem, I figured I'd start with the basic building blocks of GCP like IAM, Storage, Pub/Sub, and Cloud Functions.  Also, I wanted to get my hands dirty _interacting_ with GCP from many angles, e.g. Terraform, `gcloud`, and the Python libraries.  To that end, I created a sample app and infrastructure, which I will describe below.
+
+- First, I created [this](./infra/test_service_account) Terraform module to deploy a service account.
+
+- Next, I _used_ that service account to deploy [this other](./infra/test_app) Terraform module (which comprises my 'app').
+
+> **NOTE:**  In the first step, I deployed via my personal identity.  However, in the second step, I deployed _via the service account_ (i.e. all Terraform executions are subject to the service account's IAM permissions), because I wanted to simulate a hands-off CI/CD context.
+
+> **NOTE:**  Currently, my 'app' is quite uninteresting.  It's just a Pub/Sub topic and pull subscription.  Eventually, I plan to string multiple components together as a learning exercise, e.g. Pub/Sub triggers a Cloud Function which then inserts a record into a BigQuery table.  Or something.  I just haven't gotten that far yet.
+
+- Lastly, I created a Python [script](./scripts/test_pubsub.py) to test the app infra deployed above.
+
+
+
 ## Contents
 
 - [Setup](#setup)
@@ -97,9 +111,16 @@ provider "google" {
 Alternatively, we can set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable prior to calling any `terraform` commands.
 
 
-## Deploy app via Terraform
+### Deploy app via Terraform
 
-TODO.
+To simulate an automated CI/CD context, we want to deploy our app via the service account (_not_ via our personal identity).  To do this, verify the [`credentials`](infra/test_app/terraform.tfvars#L2) variable points to the JSON key generated above.  Then we can run:
+
+```bash
+cd infra/test_app
+terraform init
+terraform plan
+terraform apply
+```
 
 
 
