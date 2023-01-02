@@ -4,9 +4,8 @@ variable "project_id" {
   description = "Google Cloud project ID."
 }
 
-
-variable "user_id" {
+variable "credentials" {
   type        = string
   nullable    = false
-  description = "Personal user ID, e.g. first.last@gmail.com."
+  description = "Path to service account key file."
 }

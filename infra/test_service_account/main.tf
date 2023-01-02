@@ -11,22 +11,18 @@ terraform {
 provider "google" {
   project = var.project_id
   region  = "us-east1"
-  zone    = "us-east1-a"
 }
 
 
-# Enable IAM API.
+# Enable required APIs.
 resource "google_project_service" "iam_api" {
+  for_each = toset([
+    "iam.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "pubsub.googleapis.com",
+  ])
   project                    = var.project_id
-  service                    = "iam.googleapis.com"
-  disable_dependent_services = true
-}
-
-
-# Enable IAM Service Account Credentials API.
-resource "google_project_service" "iam_credentials_api" {
-  project                    = var.project_id
-  service                    = "iamcredentials.googleapis.com"
+  service                    = each.key
   disable_dependent_services = true
 }
 
@@ -38,29 +34,22 @@ resource "google_service_account" "svc_account" {
 }
 
 
-# Define IAM policies.
-# TODO:  Apply principle of least privilege.
-data "google_iam_policy" "iam_policies" {
-  binding {
-    role = "roles/iam.serviceAccountUser"
-
-    members = [
-      "user:chriscugliotta@gmail.com",
-    ]
-  }
-
-  binding {
-    role = "roles/owner"
-
-    members = [
-      "serviceAccount:${google_service_account.svc_account.email}",
-    ]
-  }
+# Allow personal user to access service account.
+resource "google_service_account_iam_member" "iam_personal_account_roles" {
+  service_account_id = google_service_account.svc_account.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "user:${var.user_id}"
 }
 
 
-# Apply IAM policies to service account.
-resource "google_service_account_iam_policy" "svc_account_policies" {
-  service_account_id = google_service_account.svc_account.name
-  policy_data        = data.google_iam_policy.iam_policies.policy_data
+# Add roles to service account.
+resource "google_project_iam_member" "iam_svc_account_roles" {
+  for_each = toset([
+    "roles/cloudfunctions.admin",
+    "roles/pubsub.admin",
+    "roles/storage.admin",
+  ])
+  role = each.key
+  member = "serviceAccount:${google_service_account.svc_account.email}"
+  project = var.project_id
 }
