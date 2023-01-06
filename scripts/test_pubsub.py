@@ -61,6 +61,7 @@ def on_received(message: Message):
     message.ack()
 
 
+
 if __name__ == '__main__':
     """Main method."""
     print('Begin.')

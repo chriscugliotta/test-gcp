@@ -26,3 +26,13 @@ resource "google_pubsub_subscription" "test_sub" {
   name  = "test-sub-1"
   topic = google_pubsub_topic.test_topic.name
 }
+
+
+# Create a Storage bucket.
+resource "google_storage_bucket" "name" {
+  name = "${var.project_id}-test-bucket-1"
+  location = "us-east1"
+  force_destroy = true
+  uniform_bucket_level_access = true
+  public_access_prevention = "enforced"
+}
